@@ -1,3 +1,4 @@
+import { execSync } from "node:child_process";
 import { serve } from "@hono/node-server";
 import { createApp } from "./server";
 import type { ServerConfig } from "./config";
@@ -5,8 +6,25 @@ import { defaultConfig } from "./config";
 import { SQLiteSpecStore } from "./storage/sqlite";
 import { initializeDatabase } from "./storage/migrate";
 
+function checkOasdiff(): void {
+  try {
+    execSync("which oasdiff", { stdio: "pipe" });
+  } catch {
+    console.error(
+      "Error: oasdiff is required but not found on PATH.\n\n" +
+      "Install with:\n" +
+      "  brew install tufin/tufin/oasdiff\n\n" +
+      "Or download from: https://github.com/Tufin/oasdiff/releases\n\n" +
+      "After installing, run: grapity serve"
+    );
+    process.exit(1);
+  }
+}
+
 export async function startServer(userConfig?: Partial<ServerConfig>) {
   const config: ServerConfig = { ...defaultConfig, ...userConfig };
+
+  checkOasdiff();
 
   if (!config.sqlitePath) {
     const homeDir = process.env.HOME || process.env.USERPROFILE || ".";
