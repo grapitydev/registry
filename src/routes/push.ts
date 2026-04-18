@@ -1,33 +1,38 @@
 import { Hono } from "hono";
-import type { PushSpecRequest, PushSpecResponse } from "@grapity/core";
+import type { AppEnv } from "../server";
+import { RegistryService } from "../services/registry";
 
-export const pushRoute = new Hono().post("/", async (c) => {
-  const body = await c.req.json<PushSpecRequest>();
+export const pushRoute = new Hono<AppEnv>().post("/", async (c) => {
+  const body = await c.req.json<{
+    content: string;
+    name: string;
+    type?: "openapi" | "asyncapi";
+    description?: string;
+    owner?: string;
+    sourceRepo?: string;
+    tags?: string[];
+    gitRef?: string;
+    pushedBy?: string;
+    prerelease?: boolean;
+    force?: boolean;
+    reason?: string;
+  }>();
 
-  return c.json<PushSpecResponse>(
-    {
-      spec: {
-        id: "",
-        name: body.name,
-        type: body.type ?? "openapi",
-        description: body.description,
-        owner: body.owner,
-        sourceRepo: body.sourceRepo,
-        tags: body.tags ?? [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      version: {
-        id: "",
-        specId: "",
-        semver: "0.0.0",
-        content: body.content,
-        checksum: "",
-        status: "active",
-        createdAt: new Date(),
-      },
-      isNewSpec: true,
-    },
-    201
-  );
+  const store = c.get("store");
+  const service = new RegistryService(store);
+
+  const result = await service.pushSpec(body.content, body.name, {
+    type: body.type,
+    description: body.description,
+    owner: body.owner,
+    sourceRepo: body.sourceRepo,
+    tags: body.tags,
+    gitRef: body.gitRef,
+    pushedBy: body.pushedBy,
+    prerelease: body.prerelease,
+    force: body.force,
+    reason: body.reason,
+  });
+
+  return c.json(result, 201);
 });

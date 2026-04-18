@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import type { HealthResponse } from "@grapity/core";
+import type { AppEnv } from "../server";
 
-export const healthRoute = new Hono().get("/", async (c) => {
-  return c.json<HealthResponse>({
+export const healthRoute = new Hono<AppEnv>().get("/", async (c) => {
+  return c.json({
     status: "ok",
     version: "0.0.1",
     uptime: process.uptime(),
