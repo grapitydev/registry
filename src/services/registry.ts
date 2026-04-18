@@ -3,10 +3,11 @@ import type {
   Spec,
   SpecVersion,
   SpecStore,
+  SpecFilters,
   CompatReport,
   AuditAction,
 } from "@grapity/core";
-import { computeChecksum } from "./storage/sqlite";
+import { computeChecksum } from "../utils";
 
 export class RegistryService {
   constructor(private store: SpecStore) {}
@@ -113,7 +114,7 @@ export class RegistryService {
     return { spec, version, compatReport, isNewSpec };
   }
 
-  async listSpecs(filters?: { type?: string; owner?: string; tags?: string[] }) {
+  async listSpecs(filters?: SpecFilters) {
     return this.store.listSpecs(filters);
   }
 

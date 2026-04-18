@@ -1,14 +1,11 @@
 import { execSync } from "node:child_process";
 import path from "node:path";
 import fs from "node:fs";
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
 import { serve } from "@hono/node-server";
 import { createApp } from "./server";
 import type { ServerConfig } from "./config";
 import { defaultConfig } from "./config";
 import { SQLiteSpecStore } from "./storage/sqlite";
-import { runMigrations } from "./storage/migrate";
 
 function checkOasdiff(): void {
   try {
@@ -47,10 +44,7 @@ export async function startServer(userConfig?: Partial<ServerConfig>) {
   }
 
   const store = new SQLiteSpecStore(config.sqlitePath!);
-
-  const sqlite = new Database(config.sqlitePath);
-  const db = drizzle(sqlite);
-  await runMigrations(db);
+  await store.migrate();
 
   const app = createApp(config, store);
 

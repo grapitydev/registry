@@ -3,12 +3,29 @@
   "version": "0.0.1",
   "description": "Grapity Registry - spec validation, compat checking, and storage server",
   "license": "Apache-2.0",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./serve": {
+      "import": {
+        "types": "./dist/serve.d.ts",
+        "default": "./dist/serve.mjs"
+      },
+      "require": {
+        "types": "./dist/serve.d.ts",
+        "default": "./dist/serve.cjs"
+      }
     }
   },
   "files": ["dist"],
@@ -21,7 +38,7 @@
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "@grapity/core": "^0.0.1",
+    "@grapity/core": "link:@grapity/core",
     "@hono/node-server": "^1.14.0",
     "hono": "^4.7.0",
     "drizzle-orm": "^0.44.0",

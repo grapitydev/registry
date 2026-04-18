@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
-import { eq, and, desc } from "drizzle-orm";
+import { sql, eq, and, desc } from "drizzle-orm";
 import { specs, specVersions, auditLog } from "@grapity/core";
 import type {
   Spec,
@@ -10,17 +10,62 @@ import type {
   SpecStore,
   AuditAction,
 } from "@grapity/core";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { v4 as uuid } from "uuid";
-import crypto from "node:crypto";
 
 export class SQLiteSpecStore implements SpecStore {
-  private db: ReturnType<typeof drizzle>;
+  private db: BetterSQLite3Database;
 
   constructor(dbPath: string) {
     const sqlite = new Database(dbPath);
     sqlite.pragma("journal_mode = WAL");
     sqlite.pragma("foreign_keys = ON");
     this.db = drizzle(sqlite);
+  }
+
+  async migrate(): Promise<void> {
+    await this.db.run(sql`CREATE TABLE IF NOT EXISTS specs (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      type TEXT NOT NULL CHECK(type IN ('openapi', 'asyncapi')),
+      description TEXT,
+      owner TEXT,
+      source_repo TEXT,
+      tags TEXT DEFAULT '[]',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )`);
+
+    await this.db.run(sql`CREATE TABLE IF NOT EXISTS spec_versions (
+      id TEXT PRIMARY KEY,
+      spec_id TEXT NOT NULL REFERENCES specs(id),
+      semver TEXT NOT NULL,
+      content TEXT NOT NULL,
+      checksum TEXT NOT NULL,
+      git_ref TEXT,
+      pushed_by TEXT,
+      status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'deprecated', 'sunset')),
+      sunset_date INTEGER,
+      previous_version TEXT,
+      force_reason TEXT,
+      is_prerelease INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL
+    )`);
+
+    await this.db.run(sql`CREATE TABLE IF NOT EXISTS audit_log (
+      id TEXT PRIMARY KEY,
+      action TEXT NOT NULL CHECK(action IN ('spec.push', 'spec.push.force', 'spec.deprecate', 'spec.sunset')),
+      actor TEXT NOT NULL,
+      spec_name TEXT NOT NULL,
+      version TEXT,
+      details TEXT,
+      created_at INTEGER NOT NULL
+    )`);
+
+    await this.db.run(sql`CREATE INDEX IF NOT EXISTS idx_spec_versions_spec_id ON spec_versions(spec_id)`);
+    await this.db.run(sql`CREATE INDEX IF NOT EXISTS idx_spec_versions_semver ON spec_versions(spec_id, semver)`);
+    await this.db.run(sql`CREATE INDEX IF NOT EXISTS idx_audit_log_spec_name ON audit_log(spec_name)`);
+    await this.db.run(sql`CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at)`);
   }
 
   async getSpec(name: string): Promise<Spec | null> {
@@ -51,14 +96,13 @@ export class SQLiteSpecStore implements SpecStore {
   }
 
   async listSpecs(filters?: SpecFilters): Promise<Spec[]> {
-    let query = this.db.select().from(specs);
     const conditions = [];
     if (filters?.type) conditions.push(eq(specs.type, filters.type));
     if (filters?.owner) conditions.push(eq(specs.owner, filters.owner));
-    if (conditions.length > 0) {
-      query = this.db.select().from(specs).where(and(...conditions));
-    }
-    const rows = await query;
+
+    const rows = conditions.length > 0
+      ? await this.db.select().from(specs).where(and(...conditions))
+      : await this.db.select().from(specs);
     return rows.map((r) => this.mapSpecRow(r));
   }
 
@@ -188,8 +232,4 @@ export class SQLiteSpecStore implements SpecStore {
       createdAt: row.createdAt,
     };
   }
-}
-
-export function computeChecksum(content: string): string {
-  return crypto.createHash("sha256").update(content).digest("hex");
 }
