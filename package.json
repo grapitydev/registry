@@ -1,0 +1,42 @@
+{
+  "name": "@grapity/registry",
+  "version": "0.0.1",
+  "description": "Grapity Registry - spec validation, compat checking, and storage server",
+  "license": "Apache-2.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "bun run src/serve.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@grapity/core": "^0.0.1",
+    "@hono/node-server": "^1.14.0",
+    "hono": "^4.7.0",
+    "drizzle-orm": "^0.44.0",
+    "better-sqlite3": "^11.9.0",
+    "pg": "^8.16.0",
+    "@apidevtools/swagger-parser": "^10.1.0",
+    "uuid": "^11.1.0",
+    "js-yaml": "^4.1.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.0",
+    "@types/pg": "^8.11.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.0",
+    "drizzle-kit": "^0.31.0"
+  }
+}
