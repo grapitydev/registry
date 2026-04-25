@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.8](https://github.com/grapitydev/registry/compare/v0.0.7...v0.0.8) (2026-04-25)
+
+
+### Bug Fixes
+
+* include drizzle migrations in published package ([1cb7e81](https://github.com/grapitydev/registry/commit/1cb7e811219d01e128be35fca1e902fe979b809e))
+
 ## [0.0.7](https://github.com/grapitydev/registry/compare/v0.0.6...v0.0.7) (2026-04-25)
 
 
