@@ -27,7 +27,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "drizzle/migrations"
   ],
   "scripts": {
     "build": "tsup",
