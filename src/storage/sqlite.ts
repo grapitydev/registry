@@ -16,6 +16,11 @@ import type {
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { v4 as uuid } from "uuid";
 
+const MIGRATIONS_FOLDER = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../drizzle/migrations/sqlite"
+);
+
 export class SQLiteSpecStore implements SpecStore {
   private db: BetterSQLite3Database;
 
@@ -26,7 +31,7 @@ export class SQLiteSpecStore implements SpecStore {
 
   async migrate(): Promise<void> {
     await migrate(this.db, {
-      migrationsFolder: path.join(path.dirname(fileURLToPath(import.meta.url)), "../../drizzle/migrations/sqlite"),
+      migrationsFolder: MIGRATIONS_FOLDER,
     });
   }
 

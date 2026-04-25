@@ -16,6 +16,11 @@ import type {
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { v4 as uuid } from "uuid";
 
+const MIGRATIONS_FOLDER = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../drizzle/migrations/pg"
+);
+
 export class PostgreSQLSpecStore implements SpecStore {
   private db: NodePgDatabase;
   private pool: Pool;
@@ -27,7 +32,7 @@ export class PostgreSQLSpecStore implements SpecStore {
 
   async migrate(): Promise<void> {
     await migrate(this.db, {
-      migrationsFolder: path.join(path.dirname(fileURLToPath(import.meta.url)), "../../drizzle/migrations/pg"),
+      migrationsFolder: MIGRATIONS_FOLDER,
     });
   }
 
