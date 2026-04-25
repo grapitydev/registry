@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.3](https://github.com/grapitydev/registry/compare/v0.0.2...v0.0.3) (2026-04-25)
+
+
+### Bug Fixes
+
+* bump @grapity/core dependency to ^0.0.4 ([48550b6](https://github.com/grapitydev/registry/commit/48550b602ed387743518543bb0f473461ac2d15d))
+* switch to ESM-only with type: module and .js output ([4a58924](https://github.com/grapitydev/registry/commit/4a5892410748c64f180856b76c5905ec220d6d34))
+
 ## [0.0.2](https://github.com/grapitydev/registry/compare/v0.0.1...v0.0.2) (2026-04-25)
 
 
