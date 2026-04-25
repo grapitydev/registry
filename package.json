@@ -43,7 +43,7 @@
     "provenance": true
   },
   "dependencies": {
-    "@grapity/core": "^0.0.1",
+    "@grapity/core": "^0.0.3",
     "@hono/node-server": "^1.14.0",
     "hono": "^4.7.0",
     "drizzle-orm": "^0.44.0",
