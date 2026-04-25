@@ -24,7 +24,9 @@
         "types": "./dist/serve.d.ts",
         "default": "./dist/serve.js"
       }
-    }
+    },
+    "./migrations/sqlite": "./drizzle/migrations/sqlite",
+    "./migrations/pg": "./drizzle/migrations/pg"
   },
   "files": [
     "dist",

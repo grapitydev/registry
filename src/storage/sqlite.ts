@@ -14,11 +14,9 @@ import type {
 } from "@grapity/core";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { v4 as uuid } from "uuid";
+import { SQLITE_MIGRATIONS_FOLDER } from "../paths";
 
-const MIGRATIONS_FOLDER = new URL(
-  "../../drizzle/migrations/sqlite",
-  import.meta.url
-).pathname;
+const MIGRATIONS_FOLDER = SQLITE_MIGRATIONS_FOLDER;
 
 export class SQLiteSpecStore implements SpecStore {
   private db: BetterSQLite3Database;

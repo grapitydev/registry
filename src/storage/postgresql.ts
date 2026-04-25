@@ -14,11 +14,9 @@ import type {
 } from "@grapity/core";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { v4 as uuid } from "uuid";
+import { PG_MIGRATIONS_FOLDER } from "../paths";
 
-const MIGRATIONS_FOLDER = new URL(
-  "../../drizzle/migrations/pg",
-  import.meta.url
-).pathname;
+const MIGRATIONS_FOLDER = PG_MIGRATIONS_FOLDER;
 
 export class PostgreSQLSpecStore implements SpecStore {
   private db: NodePgDatabase;
