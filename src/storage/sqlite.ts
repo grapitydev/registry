@@ -1,6 +1,6 @@
-import { Database } from "bun:sqlite";
-import { drizzle } from "drizzle-orm/bun-sqlite";
-import { migrate } from "drizzle-orm/bun-sqlite/migrator";
+import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { sql, eq, and, desc, asc } from "drizzle-orm";
 import path from "node:path";
 import { specs, specVersions, auditLog } from "./schema";
@@ -12,11 +12,11 @@ import type {
   SpecStore,
   AuditAction,
 } from "@grapity/core";
-import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { v4 as uuid } from "uuid";
 
 export class SQLiteSpecStore implements SpecStore {
-  private db: BunSQLiteDatabase;
+  private db: BetterSQLite3Database;
 
   constructor(dbPath: string) {
     const sqlite = new Database(dbPath);

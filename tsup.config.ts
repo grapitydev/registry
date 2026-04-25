@@ -7,5 +7,5 @@ export default defineConfig({
   dts: true,
   clean: true,
   splitting: false,
-  external: ["bun:sqlite", "pg"],
+  external: ["pg"],
 });
