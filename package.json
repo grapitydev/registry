@@ -1,6 +1,6 @@
 {
   "name": "@grapity/registry",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Grapity Registry - spec validation, compat checking, and storage server",
   "license": "Apache-2.0",
   "repository": {
@@ -25,7 +25,9 @@
       }
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "bun run src/serve.ts",
