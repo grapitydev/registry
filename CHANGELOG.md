@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.5](https://github.com/grapitydev/registry/compare/v0.0.4...v0.0.5) (2026-04-25)
+
+
+### Bug Fixes
+
+* add backend info to README ([21cfe63](https://github.com/grapitydev/registry/commit/21cfe63ce6c59940a42246e7a98f6f0d99a2d952))
+
 ## [0.0.4](https://github.com/grapitydev/registry/compare/v0.0.3...v0.0.4) (2026-04-25)
 
 
