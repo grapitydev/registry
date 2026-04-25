@@ -3,6 +3,10 @@
   "version": "0.0.1",
   "description": "Grapity Registry - spec validation, compat checking, and storage server",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grapitydev/registry"
+  },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -35,7 +39,8 @@
     "prepublishOnly": "bun run build"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "dependencies": {
     "@grapity/core": "^0.0.1",
