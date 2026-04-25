@@ -1,0 +1,704 @@
+openapi: "3.1.0"
+
+info:
+  title: Grapity Registry API
+  version: "0.0.1"
+  description: >
+    The Grapity Registry is an API contract guardian. It validates, versions,
+    and enforces backward compatibility for OpenAPI and AsyncAPI specs.
+    Every spec that enters the registry has earned its place.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  - url: http://localhost:3750
+    description: Local development server
+
+security:
+  - apiKey: []
+  - {}
+
+tags:
+  - name: health
+    description: Server health
+  - name: specs
+    description: Spec management — push, list, retrieve, validate, versions, and compatibility
+
+paths:
+  /v1/health:
+    get:
+      operationId: getHealth
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs:
+    get:
+      operationId: listSpecs
+      tags: [specs]
+      summary: List all specs
+      parameters:
+        - name: type
+          in: query
+          schema:
+            $ref: "#/components/schemas/SpecType"
+          description: Filter by spec type
+        - name: owner
+          in: query
+          schema:
+            type: string
+          description: Filter by owner
+        - name: tags
+          in: query
+          schema:
+            type: string
+          description: Comma-separated list of tags to filter by
+          example: "payments,public"
+      responses:
+        "200":
+          description: List of specs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Spec"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+    post:
+      operationId: pushSpec
+      tags: [specs]
+      summary: Push a spec version
+      description: >
+        Push a new spec version to the registry. On the first push for a given
+        name, the spec is created. On subsequent pushes, the spec is diffed
+        against the previous version. Breaking changes are blocked unless
+        `force: true` is provided with a reason.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushSpecRequest"
+      responses:
+        "201":
+          description: Spec version registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushSpecResponse"
+        "400":
+          description: Missing required fields or invalid spec content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: >
+            Breaking change detected. The spec breaks backward compatibility
+            with the previous version. Use `force: true` with a `reason` to
+            override and create an audit record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreakingChangeError"
+        "422":
+          description: >
+            Prerelease constraint violation. A prerelease version (0.x) cannot
+            be pushed after a release version (1.x+) has already been registered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs/{name}:
+    get:
+      operationId: getSpec
+      tags: [specs]
+      summary: Get a spec and its latest version
+      parameters:
+        - $ref: "#/components/parameters/specName"
+      responses:
+        "200":
+          description: Spec metadata and latest version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetSpecResponse"
+        "404":
+          description: Spec not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs/{name}/validate:
+    post:
+      operationId: validateSpec
+      tags: [specs]
+      summary: Validate a spec without pushing
+      description: >
+        Validates the spec content and checks backward compatibility against
+        the latest registered version for this name. Does not store anything.
+      parameters:
+        - $ref: "#/components/parameters/specName"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidateSpecRequest"
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidateSpecResponse"
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs/{name}/versions:
+    get:
+      operationId: listVersions
+      tags: [specs]
+      summary: List all versions of a spec
+      description: Returns versions ordered newest first.
+      parameters:
+        - $ref: "#/components/parameters/specName"
+      responses:
+        "200":
+          description: List of versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SpecVersion"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs/{name}/versions/{semver}:
+    get:
+      operationId: getVersion
+      tags: [specs]
+      summary: Get a specific version
+      parameters:
+        - $ref: "#/components/parameters/specName"
+        - $ref: "#/components/parameters/semver"
+      responses:
+        "200":
+          description: Version detail including full spec content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetVersionResponse"
+        "404":
+          description: Spec or version not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs/{name}/spec.json:
+    get:
+      operationId: getSpecJson
+      tags: [specs]
+      summary: Get the latest spec as JSON
+      description: >
+        Returns the latest version of the spec document as a parsed JSON object.
+        The spec is converted to JSON regardless of the format it was pushed in.
+        Content-Type reflects the spec type (OpenAPI or AsyncAPI).
+      parameters:
+        - $ref: "#/components/parameters/specName"
+      responses:
+        "200":
+          description: Spec document as JSON
+          content:
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+            application/vnd.aai.asyncapi+json:
+              schema:
+                type: object
+        "404":
+          description: Spec not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs/{name}/spec.yaml:
+    get:
+      operationId: getSpecYaml
+      tags: [specs]
+      summary: Get the latest spec as YAML
+      description: >
+        Returns the latest version of the spec document as YAML text.
+        The spec is converted to YAML regardless of the format it was pushed in.
+        Content-Type reflects the spec type (OpenAPI or AsyncAPI).
+      parameters:
+        - $ref: "#/components/parameters/specName"
+      responses:
+        "200":
+          description: Spec document as YAML
+          content:
+            application/vnd.oai.openapi+yaml:
+              schema:
+                type: string
+            application/vnd.aai.asyncapi+yaml:
+              schema:
+                type: string
+        "404":
+          description: Spec not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs/{name}/versions/{semver}/spec.json:
+    get:
+      operationId: getVersionSpecJson
+      tags: [specs]
+      summary: Get a specific version as JSON
+      parameters:
+        - $ref: "#/components/parameters/specName"
+        - $ref: "#/components/parameters/semver"
+      responses:
+        "200":
+          description: Spec document as JSON
+          content:
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+            application/vnd.aai.asyncapi+json:
+              schema:
+                type: object
+        "404":
+          description: Spec or version not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs/{name}/versions/{semver}/spec.yaml:
+    get:
+      operationId: getVersionSpecYaml
+      tags: [specs]
+      summary: Get a specific version as YAML
+      parameters:
+        - $ref: "#/components/parameters/specName"
+        - $ref: "#/components/parameters/semver"
+      responses:
+        "200":
+          description: Spec document as YAML
+          content:
+            application/vnd.oai.openapi+yaml:
+              schema:
+                type: string
+            application/vnd.aai.asyncapi+yaml:
+              schema:
+                type: string
+        "404":
+          description: Spec or version not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /v1/specs/{name}/compat/{semver}:
+    get:
+      operationId: getCompatReport
+      tags: [specs]
+      summary: Get the compatibility report for a version
+      description: >
+        Returns the compatibility report generated when this version was pushed.
+        Not available for the first version of a spec (no previous version to diff against).
+      parameters:
+        - $ref: "#/components/parameters/specName"
+        - $ref: "#/components/parameters/semver"
+      responses:
+        "200":
+          description: Compatibility report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetCompatReportResponse"
+        "404":
+          description: Spec, version, or compat report not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: >
+        Required in remote mode (SaaS or self-hosted). Not required in local
+        mode (`grapity serve` on localhost with auth: none).
+
+  parameters:
+    specName:
+      name: name
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+      description: URL-friendly spec identifier
+      example: payments-api
+
+    semver:
+      name: semver
+      in: path
+      required: true
+      schema:
+        type: string
+        pattern: "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$"
+      description: Semantic version
+      example: "1.2.0"
+
+  schemas:
+    SpecType:
+      type: string
+      enum: [openapi, asyncapi]
+
+    VersionClassification:
+      type: string
+      enum: [initial, major, minor, patch]
+
+    Spec:
+      type: object
+      required: [id, name, type, tags, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: payments-api
+        type:
+          $ref: "#/components/schemas/SpecType"
+        description:
+          type: string
+        owner:
+          type: string
+          example: platform-team
+        sourceRepo:
+          type: string
+          format: uri
+          example: https://github.com/acme/payments-service
+        tags:
+          type: array
+          items:
+            type: string
+          example: [payments, public]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    SpecVersion:
+      type: object
+      required: [id, specId, semver, checksum, isPrerelease, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        specId:
+          type: string
+          format: uuid
+        semver:
+          type: string
+          example: "1.2.0"
+        checksum:
+          type: string
+          description: SHA-256 hash of the content
+        gitRef:
+          type: string
+          description: Git commit SHA at time of push
+          example: "a1b2c3d4"
+        pushedBy:
+          type: string
+          description: User or CI identity that pushed this version
+          example: "github-actions[bot]"
+        compatibility:
+          $ref: "#/components/schemas/CompatReport"
+        previousVersion:
+          type: string
+          description: Semver of the previous version this was diffed against
+          example: "1.1.0"
+        forceReason:
+          type: string
+          description: Reason provided when force-pushing a breaking change
+        isPrerelease:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CompatReport:
+      type: object
+      required: [previousVersion, classification, breakingChanges, safeChanges]
+      properties:
+        previousVersion:
+          type: string
+          example: "1.1.0"
+        classification:
+          $ref: "#/components/schemas/VersionClassification"
+        breakingChanges:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreakingChange"
+        safeChanges:
+          type: array
+          items:
+            $ref: "#/components/schemas/SafeChange"
+        suggestedVersion:
+          type: string
+          description: The version the registry suggests based on the classification
+          example: "2.0.0"
+
+    BreakingChange:
+      type: object
+      required: [id, rule, description, path]
+      properties:
+        id:
+          type: string
+        rule:
+          type: string
+          description: >
+            Machine-readable rule identifier. Treat as an open string — new rules
+            will be added as the compat engine evolves. Known values:
+            endpoint-removed, endpoint-removed-without-deprecation,
+            endpoint-removed-missing-sunset, endpoint-removed-before-sunset,
+            required-request-param-added, response-property-removed,
+            response-status-removed, stable-endpoint-marked-draft.
+          example: response-property-removed
+        description:
+          type: string
+          example: "Response property 'userId' was removed from GET /users/{id}"
+        path:
+          type: string
+          example: "/users/{id}/GET/response/200/userId"
+        originalValue:
+          type: string
+        newValue:
+          type: string
+        affectedConsumers:
+          type: array
+          items:
+            type: string
+
+    SafeChange:
+      type: object
+      required: [id, rule, description, path]
+      properties:
+        id:
+          type: string
+        rule:
+          type: string
+          description: >
+            Machine-readable rule identifier. Treat as an open string — new rules
+            will be added as the compat engine evolves. Known values:
+            endpoint-added, endpoint-deprecated, optional-request-param-added,
+            response-status-added, draft-endpoint-changed.
+          example: endpoint-added
+        description:
+          type: string
+          example: "Optional response property 'metadata' added to GET /users/{id}"
+        path:
+          type: string
+          example: "/users/{id}/GET/response/200/metadata"
+
+    ApiError:
+      type: object
+      required: [error, message, statusCode]
+      properties:
+        error:
+          type: string
+          description: Machine-readable error code
+          example: not_found
+        message:
+          type: string
+          description: Human-readable error description
+          example: Spec "payments-api" not found
+        statusCode:
+          type: integer
+          example: 404
+
+    BreakingChangeError:
+      allOf:
+        - $ref: "#/components/schemas/ApiError"
+        - type: object
+          required: [compatReport]
+          properties:
+            compatReport:
+              $ref: "#/components/schemas/CompatReport"
+          description: >
+            Returned when a push is blocked due to breaking changes.
+            The compatReport describes exactly what changed and suggests
+            the correct next semver.
+
+    HealthResponse:
+      type: object
+      required: [status, version, uptime]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        version:
+          type: string
+          example: "0.1.0"
+        uptime:
+          type: number
+          description: Server uptime in seconds
+          example: 3600.42
+
+    PushSpecRequest:
+      type: object
+      required: [content, name]
+      properties:
+        content:
+          type: string
+          description: Raw OpenAPI or AsyncAPI document (YAML or JSON)
+        name:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+          example: payments-api
+        type:
+          $ref: "#/components/schemas/SpecType"
+        description:
+          type: string
+        owner:
+          type: string
+          example: platform-team
+        sourceRepo:
+          type: string
+          format: uri
+        tags:
+          type: array
+          items:
+            type: string
+        gitRef:
+          type: string
+          description: Git commit SHA
+        pushedBy:
+          type: string
+          description: User or CI identity performing the push
+        version:
+          type: string
+          pattern: "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$"
+          description: >
+            Declare an explicit target semver. When breaking changes are detected
+            and the declared version is a major bump, the push is accepted as an
+            intentional major release without requiring `force`.
+          example: "2.0.0"
+        prerelease:
+          type: boolean
+          default: false
+          description: Push as a prerelease version (0.x)
+        force:
+          type: boolean
+          default: false
+          description: Override breaking change block. Requires `reason`.
+        reason:
+          type: string
+          description: Required when `force` is true. Recorded in the audit log.
+          example: "security fix CVE-2026-1234"
+
+    PushSpecResponse:
+      type: object
+      required: [spec, version, isNewSpec]
+      properties:
+        spec:
+          $ref: "#/components/schemas/Spec"
+        version:
+          $ref: "#/components/schemas/SpecVersion"
+        compatReport:
+          $ref: "#/components/schemas/CompatReport"
+        isNewSpec:
+          type: boolean
+          description: True if this is the first version of this spec
+
+    ValidateSpecRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          description: Raw OpenAPI or AsyncAPI document (YAML or JSON)
+
+    ValidateSpecResponse:
+      type: object
+      required: [valid]
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            type: string
+        warnings:
+          type: array
+          items:
+            type: string
+        compatReport:
+          $ref: "#/components/schemas/CompatReport"
+
+    GetSpecResponse:
+      type: object
+      required: [spec]
+      properties:
+        spec:
+          $ref: "#/components/schemas/Spec"
+        latestVersion:
+          $ref: "#/components/schemas/SpecVersion"
+
+    GetVersionResponse:
+      type: object
+      required: [version]
+      properties:
+        version:
+          $ref: "#/components/schemas/SpecVersion"
+
+    GetCompatReportResponse:
+      type: object
+      required: [compatReport]
+      properties:
+        compatReport:
+          $ref: "#/components/schemas/CompatReport"
+

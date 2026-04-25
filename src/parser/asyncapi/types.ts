@@ -1,1 +1,0 @@
-export type AsyncApiSpec = Record<string, unknown>;

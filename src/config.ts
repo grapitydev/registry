@@ -3,6 +3,7 @@ export interface ServerConfig {
   database: "sqlite" | "postgresql";
   sqlitePath?: string;
   postgresUrl?: string;
+  gracePeriodDays: number;
   auth?: {
     mode: "none" | "api-key" | "jwt";
     apiKeyHashes?: string[];
@@ -10,7 +11,6 @@ export interface ServerConfig {
   };
   audit?: {
     enabled: boolean;
-    exportPath?: string;
   };
 }
 
@@ -18,4 +18,5 @@ export const defaultConfig: ServerConfig = {
   port: 3750,
   database: "sqlite",
   sqlitePath: undefined,
+  gracePeriodDays: 30,
 };

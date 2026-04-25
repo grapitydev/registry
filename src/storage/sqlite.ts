@@ -1,7 +1,9 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { sql, eq, and, desc } from "drizzle-orm";
-import { specs, specVersions, auditLog } from "@grapity/core";
+import { Database } from "bun:sqlite";
+import { drizzle } from "drizzle-orm/bun-sqlite";
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
+import { sql, eq, and, desc, asc } from "drizzle-orm";
+import path from "node:path";
+import { specs, specVersions, auditLog } from "./schema";
 import type {
   Spec,
   SpecVersion,
@@ -10,62 +12,21 @@ import type {
   SpecStore,
   AuditAction,
 } from "@grapity/core";
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { v4 as uuid } from "uuid";
 
 export class SQLiteSpecStore implements SpecStore {
-  private db: BetterSQLite3Database;
+  private db: BunSQLiteDatabase;
 
   constructor(dbPath: string) {
     const sqlite = new Database(dbPath);
-    sqlite.pragma("journal_mode = WAL");
-    sqlite.pragma("foreign_keys = ON");
     this.db = drizzle(sqlite);
   }
 
   async migrate(): Promise<void> {
-    await this.db.run(sql`CREATE TABLE IF NOT EXISTS specs (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
-      type TEXT NOT NULL CHECK(type IN ('openapi', 'asyncapi')),
-      description TEXT,
-      owner TEXT,
-      source_repo TEXT,
-      tags TEXT DEFAULT '[]',
-      created_at INTEGER NOT NULL,
-      updated_at INTEGER NOT NULL
-    )`);
-
-    await this.db.run(sql`CREATE TABLE IF NOT EXISTS spec_versions (
-      id TEXT PRIMARY KEY,
-      spec_id TEXT NOT NULL REFERENCES specs(id),
-      semver TEXT NOT NULL,
-      content TEXT NOT NULL,
-      checksum TEXT NOT NULL,
-      git_ref TEXT,
-      pushed_by TEXT,
-      status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'deprecated', 'sunset')),
-      sunset_date INTEGER,
-      previous_version TEXT,
-      force_reason TEXT,
-      is_prerelease INTEGER NOT NULL DEFAULT 0,
-      created_at INTEGER NOT NULL
-    )`);
-
-    await this.db.run(sql`CREATE TABLE IF NOT EXISTS audit_log (
-      id TEXT PRIMARY KEY,
-      action TEXT NOT NULL CHECK(action IN ('spec.push', 'spec.push.force', 'spec.deprecate', 'spec.sunset')),
-      actor TEXT NOT NULL,
-      spec_name TEXT NOT NULL,
-      version TEXT,
-      details TEXT,
-      created_at INTEGER NOT NULL
-    )`);
-
-    await this.db.run(sql`CREATE INDEX IF NOT EXISTS idx_spec_versions_spec_id ON spec_versions(spec_id)`);
-    await this.db.run(sql`CREATE INDEX IF NOT EXISTS idx_spec_versions_semver ON spec_versions(spec_id, semver)`);
-    await this.db.run(sql`CREATE INDEX IF NOT EXISTS idx_audit_log_spec_name ON audit_log(spec_name)`);
-    await this.db.run(sql`CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at)`);
+    await migrate(this.db, {
+      migrationsFolder: path.join(import.meta.dir, "../../drizzle/migrations/sqlite"),
+    });
   }
 
   async getSpec(name: string): Promise<Spec | null> {
@@ -89,7 +50,7 @@ export class SQLiteSpecStore implements SpecStore {
     if (!spec) return null;
     const rows = await this.db.select().from(specVersions)
       .where(eq(specVersions.specId, spec.id))
-      .orderBy(desc(specVersions.createdAt))
+      .orderBy(desc(specVersions.createdAt), desc(sql`rowid`))
       .limit(1);
     if (rows.length === 0) return null;
     return this.mapVersionRow(rows[0]);
@@ -100,9 +61,17 @@ export class SQLiteSpecStore implements SpecStore {
     if (filters?.type) conditions.push(eq(specs.type, filters.type));
     if (filters?.owner) conditions.push(eq(specs.owner, filters.owner));
 
-    const rows = conditions.length > 0
+    let rows = conditions.length > 0
       ? await this.db.select().from(specs).where(and(...conditions))
       : await this.db.select().from(specs);
+
+    if (filters?.tags && filters.tags.length > 0) {
+      rows = rows.filter((row) => {
+        const rowTags = (row.tags as string[]) ?? [];
+        return filters.tags!.every((tag) => rowTags.includes(tag));
+      });
+    }
+
     return rows.map((r) => this.mapSpecRow(r));
   }
 
@@ -111,7 +80,7 @@ export class SQLiteSpecStore implements SpecStore {
     if (!spec) return [];
     const rows = await this.db.select().from(specVersions)
       .where(eq(specVersions.specId, spec.id))
-      .orderBy(desc(specVersions.createdAt));
+      .orderBy(desc(specVersions.createdAt), desc(sql`rowid`));
     return rows.map((r) => this.mapVersionRow(r));
   }
 
@@ -145,8 +114,7 @@ export class SQLiteSpecStore implements SpecStore {
       checksum: version.checksum,
       gitRef: version.gitRef ?? null,
       pushedBy: version.pushedBy ?? null,
-      status: version.status,
-      sunsetDate: version.sunsetDate ?? null,
+      compatibility: version.compatibility ?? null,
       previousVersion: version.previousVersion ?? null,
       forceReason: version.forceReason ?? null,
       isPrerelease: version.isPrerelease,
@@ -154,28 +122,6 @@ export class SQLiteSpecStore implements SpecStore {
     });
 
     return version;
-  }
-
-  async deprecateVersion(name: string, semver: string, sunsetDate: Date): Promise<SpecVersion> {
-    const version = await this.getSpecVersion(name, semver);
-    if (!version) throw new Error(`Version ${semver} not found for spec ${name}`);
-
-    await this.db.update(specVersions)
-      .set({ status: "deprecated", sunsetDate })
-      .where(eq(specVersions.id, version.id));
-
-    return { ...version, status: "deprecated", sunsetDate };
-  }
-
-  async sunsetVersion(name: string, semver: string): Promise<SpecVersion> {
-    const version = await this.getSpecVersion(name, semver);
-    if (!version) throw new Error(`Version ${semver} not found for spec ${name}`);
-
-    await this.db.update(specVersions)
-      .set({ status: "sunset" })
-      .where(eq(specVersions.id, version.id));
-
-    return { ...version, status: "sunset" };
   }
 
   async getCompatReport(name: string, semver: string): Promise<CompatReport | null> {
@@ -224,8 +170,7 @@ export class SQLiteSpecStore implements SpecStore {
       checksum: row.checksum,
       gitRef: row.gitRef ?? undefined,
       pushedBy: row.pushedBy ?? undefined,
-      status: row.status as "active" | "deprecated" | "sunset",
-      sunsetDate: row.sunsetDate ?? undefined,
+      compatibility: (row.compatibility as CompatReport | null) ?? undefined,
       previousVersion: row.previousVersion ?? undefined,
       forceReason: row.forceReason ?? undefined,
       isPrerelease: row.isPrerelease,

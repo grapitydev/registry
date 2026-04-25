@@ -1,6 +1,11 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../server";
 import { RegistryService } from "../services/registry";
+import type { SpecVersion } from "@grapity/core";
+
+function withoutContent({ content: _, ...rest }: SpecVersion) {
+  return rest;
+}
 
 export const getVersionRoute = new Hono<AppEnv>().get(
   "/:name/versions/:semver",
@@ -15,6 +20,6 @@ export const getVersionRoute = new Hono<AppEnv>().get(
       return c.json({ error: "not_found", message: `Version ${semver} not found for spec "${name}"`, statusCode: 404 }, 404);
     }
 
-    return c.json({ version });
+    return c.json({ version: withoutContent(version) });
   }
 );

@@ -1,3 +1,9 @@
-export async function parseOpenApiSpec(content: string): Promise<Record<string, unknown>> {
-  throw new Error("Not implemented");
+import yaml from "js-yaml";
+
+export function parseOpenApiSpec(content: string): { paths?: Record<string, Record<string, any>> } {
+  const obj = yaml.load(content);
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) {
+    throw new Error("Invalid spec content: not a valid YAML/JSON object");
+  }
+  return obj as { paths?: Record<string, Record<string, any>> };
 }

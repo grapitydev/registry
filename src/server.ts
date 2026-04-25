@@ -10,7 +10,7 @@ import { getSpecRoute } from "./routes/get-spec";
 import { versionsRoute } from "./routes/versions";
 import { getVersionRoute } from "./routes/get-version";
 import { compatReportRoute } from "./routes/compat-report";
-import { deprecateRoute } from "./routes/deprecate";
+import { serveSpecRoute } from "./routes/serve-spec";
 import { healthRoute } from "./routes/health";
 import type { ServerConfig } from "./config";
 
@@ -40,8 +40,8 @@ export function createApp(config: ServerConfig, store: SpecStore) {
   app.route("/v1/specs", getSpecRoute);
   app.route("/v1/specs", versionsRoute);
   app.route("/v1/specs", getVersionRoute);
+  app.route("/v1/specs", serveSpecRoute);
   app.route("/v1/specs", compatReportRoute);
-  app.route("/v1/specs", deprecateRoute);
   app.route("/v1/health", healthRoute);
 
   return app;

@@ -1,13 +1,25 @@
 import { v4 as uuid } from "uuid";
-import type {
-  Spec,
-  SpecVersion,
-  SpecStore,
-  SpecFilters,
-  CompatReport,
-  AuditAction,
-} from "@grapity/core";
+import type { Spec, SpecVersion, SpecStore, SpecFilters, CompatReport } from "@grapity/core";
 import { computeChecksum } from "../utils";
+import { parseOpenApiSpec } from "../parser/openapi/parse";
+import { diffSpecs } from "../compat-engine/differ";
+import { checkGracePeriod } from "../compat-engine/grace-period";
+import { classifyChanges } from "../compat-engine/classify";
+import type { VersionClassification } from "@grapity/core";
+
+export class BreakingChangeError extends Error {
+  constructor(public readonly compatReport: CompatReport) {
+    super("Breaking changes detected");
+    this.name = "BreakingChangeError";
+  }
+}
+
+export class PrereleaseConstraintError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PrereleaseConstraintError";
+  }
+}
 
 export class RegistryService {
   constructor(private store: SpecStore) {}
@@ -23,6 +35,7 @@ export class RegistryService {
       tags?: string[];
       gitRef?: string;
       pushedBy?: string;
+      version?: string;
       prerelease?: boolean;
       force?: boolean;
       reason?: string;
@@ -55,28 +68,53 @@ export class RegistryService {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      semver = prerelease ? "0.1.0" : "1.0.0";
+      semver = options?.version ?? (prerelease ? "0.1.0" : "1.0.0");
     } else {
       spec = existingSpec;
       const latestVersion = await this.store.getLatestVersion(name);
+
+      if (prerelease && latestVersion && !latestVersion.isPrerelease) {
+        throw new PrereleaseConstraintError(
+          `Cannot push pre-release version. ${name}@${latestVersion.semver} is already a release version.`
+        );
+      }
+
       if (!latestVersion) {
-        semver = prerelease ? "0.1.0" : "1.0.0";
+        semver = options?.version ?? (prerelease ? "0.1.0" : "1.0.0");
       } else {
         previousVersion = latestVersion.semver;
 
-        if (prerelease) {
-          if (!latestVersion.isPrerelease && latestVersion.semver !== "0.0.0") {
-            throw new Error(
-              `Cannot push pre-release version. ${name}@${latestVersion.semver} is already a release version. Pre-release versions can only be pushed when the latest version is also pre-release.`
-            );
-          }
+        const oldSpec = parseOpenApiSpec(latestVersion.content);
+        const newSpec = parseOpenApiSpec(content);
+        const changes = diffSpecs(oldSpec, newSpec);
+        const graceViolations = checkGracePeriod(changes);
+        const { compatReport: report, hasGraceViolations, hasOtherBreakingChanges } = classifyChanges(
+          changes,
+          graceViolations,
+          previousVersion,
+        );
+
+        const isBlocked = !options?.force && (
+          hasGraceViolations ||
+          (hasOtherBreakingChanges && !this.isValidMajorDeclaration(latestVersion.semver, options?.version))
+        );
+
+        if (isBlocked) {
+          throw new BreakingChangeError(report);
         }
 
-        const classification = latestVersion.isPrerelease
-          ? this.bumpPreRelease(latestVersion.semver, "minor")
-          : this.bumpRelease(latestVersion.semver, "minor");
+        if (options?.version) {
+          semver = options.version;
+        } else if (prerelease) {
+          const level = report.classification === "patch" ? "patch" : "minor";
+          semver = this.bumpPreRelease(latestVersion.semver, level);
+        } else if (latestVersion.isPrerelease) {
+          semver = "1.0.0";
+        } else {
+          semver = this.bumpRelease(latestVersion.semver, report.classification);
+        }
 
-        semver = classification;
+        compatReport = { ...report, suggestedVersion: semver };
       }
     }
 
@@ -88,7 +126,7 @@ export class RegistryService {
       checksum,
       gitRef: options?.gitRef,
       pushedBy: options?.pushedBy,
-      status: "active",
+      compatibility: compatReport,
       previousVersion,
       forceReason: options?.force ? options.reason : undefined,
       isPrerelease: prerelease,
@@ -97,19 +135,13 @@ export class RegistryService {
 
     await this.store.pushSpecVersion(spec, version);
 
-    const auditAction: AuditAction = options?.force ? "spec.push.force" : "spec.push";
-    await this.store.logAudit(
-      auditAction,
-      options?.pushedBy ?? "unknown",
-      name,
-      semver,
-      {
-        breakingChanges: compatReport?.breakingChanges.length ?? 0,
-        safeChanges: compatReport?.safeChanges.length ?? 0,
-        forced: options?.force ?? false,
-        reason: options?.reason,
-      }
-    );
+    const auditAction = options?.force ? "spec.push.force" : "spec.push";
+    await this.store.logAudit(auditAction, options?.pushedBy ?? "unknown", name, semver, {
+      breakingChanges: compatReport?.breakingChanges.length ?? 0,
+      safeChanges: compatReport?.safeChanges.length ?? 0,
+      forced: options?.force ?? false,
+      reason: options?.reason,
+    });
 
     return { spec, version, compatReport, isNewSpec };
   }
@@ -137,33 +169,27 @@ export class RegistryService {
     return this.store.getCompatReport(name, semver);
   }
 
-  async deprecateVersion(
-    name: string,
-    semver: string,
-    sunsetDate: Date,
-    actor?: string
-  ) {
-    const version = await this.store.deprecateVersion(name, semver, sunsetDate);
-    await this.store.logAudit("spec.deprecate", actor ?? "unknown", name, semver, {
-      sunsetDate: sunsetDate.toISOString(),
-    });
-    return version;
+  private isValidMajorDeclaration(currentSemver: string, declaredVersion?: string): boolean {
+    if (!declaredVersion) return false;
+    return this.isMajorBump(currentSemver, declaredVersion);
   }
 
-  async sunsetVersion(name: string, semver: string, actor?: string) {
-    const version = await this.store.sunsetVersion(name, semver);
-    await this.store.logAudit("spec.sunset", actor ?? "unknown", name, semver, {});
-    return version;
+  private isMajorBump(from: string, to: string): boolean {
+    const f = from.split(".").map(Number);
+    const t = to.split(".").map(Number);
+    if (f.length !== 3 || t.length !== 3) return false;
+    return t[0] > f[0];
   }
 
-  private bumpRelease(current: string, level: "major" | "minor" | "patch"): string {
+  private bumpRelease(current: string, classification: VersionClassification | "initial"): string {
     const parts = current.split(".").map(Number);
     if (parts.length !== 3) return "1.0.0";
     const [major, minor, patch] = parts;
-    switch (level) {
+    switch (classification) {
       case "major": return `${major + 1}.0.0`;
       case "minor": return `${major}.${minor + 1}.0`;
       case "patch": return `${major}.${minor}.${patch + 1}`;
+      default: return `${major}.${minor + 1}.0`;
     }
   }
 
