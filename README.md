@@ -8,16 +8,31 @@ This is the server component. The CLI (`@grapity/cli`) communicates with this se
 
 ### Local mode (SQLite)
 
+Zero infrastructure. Data stored in `~/.grapity/registry.db`.
+
 ```bash
+npm install -g @grapity/cli @grapity/registry
+grapity init --local
 grapity serve
-# Starts on http://localhost:3750
-# Data stored in ~/.grapity/registry.db
+# Server running on http://localhost:3750
 ```
 
 ### Self-hosted (PostgreSQL)
 
 ```bash
-grapity serve --db postgresql://user:pass@db:5432/grapity --auth jwt
+npm install -g @grapity/cli @grapity/registry
+grapity serve --db postgresql://user:pass@host:5432/grapity --auth jwt
+```
+
+Auth modes: `none` (default), `api-key`, `jwt`. Custom port via `-p <port>`.
+
+### Remote / SaaS
+
+Point the CLI at a hosted Grapity instance. No server to run.
+
+```bash
+npm install -g @grapity/cli
+grapity init --remote --url https://api.grapity.dev --api-key <key>
 ```
 
 ## Development

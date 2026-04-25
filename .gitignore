@@ -2,3 +2,5 @@ node_modules/
 dist/
 *.tsbuildinfo
 .drizzle/
+.DS_Store
+.env*
