@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.9](https://github.com/grapitydev/registry/compare/v0.0.8...v0.0.9) (2026-04-25)
+
+
+### Bug Fixes
+
+* resolve migration paths from src/ level for bundled output ([921d4f4](https://github.com/grapitydev/registry/commit/921d4f44e41eaa6f7a4329d1b4a702095510fbf9))
+
 ## [0.0.8](https://github.com/grapitydev/registry/compare/v0.0.7...v0.0.8) (2026-04-25)
 
 
