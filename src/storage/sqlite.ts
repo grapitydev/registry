@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { sql, eq, and, desc, asc } from "drizzle-orm";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { specs, specVersions, auditLog } from "./schema";
 import type {
   Spec,
@@ -25,7 +26,7 @@ export class SQLiteSpecStore implements SpecStore {
 
   async migrate(): Promise<void> {
     await migrate(this.db, {
-      migrationsFolder: path.join(import.meta.dir, "../../drizzle/migrations/sqlite"),
+      migrationsFolder: path.join(path.dirname(fileURLToPath(import.meta.url)), "../../drizzle/migrations/sqlite"),
     });
   }
 

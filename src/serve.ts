@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import { serve } from "@hono/node-server";
 import { createApp } from "./server";
 import type { ServerConfig } from "./config";
@@ -45,6 +46,6 @@ export async function startServer(userConfig?: Partial<ServerConfig>) {
 
 export type { ServerConfig };
 
-if (import.meta.main) {
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   startServer();
 }

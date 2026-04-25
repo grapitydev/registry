@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { eq, and, desc } from "drizzle-orm";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { specs, specVersions, auditLog } from "./schema-pg";
 import type {
   Spec,
@@ -26,7 +27,7 @@ export class PostgreSQLSpecStore implements SpecStore {
 
   async migrate(): Promise<void> {
     await migrate(this.db, {
-      migrationsFolder: path.join(import.meta.dir, "../../drizzle/migrations/pg"),
+      migrationsFolder: path.join(path.dirname(fileURLToPath(import.meta.url)), "../../drizzle/migrations/pg"),
     });
   }
 
