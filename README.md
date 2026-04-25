@@ -2,7 +2,7 @@
 
 Grapity Registry Server - spec validation, backward compatibility checking, and versioned storage for API specs.
 
-This is the server component. The CLI (`@grapity/cli`) communicates with this server over HTTP.
+This is the server component. The CLI (`@grapity/cli`) communicates with this server over HTTP. Supports both SQLite (local) and PostgreSQL (production) backends.
 
 ## Usage
 
