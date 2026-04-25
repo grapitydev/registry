@@ -23,8 +23,10 @@ grapity serve --db postgresql://user:pass@db:5432/grapity --auth jwt
 ## Development
 
 ```bash
-bun install
-bun run dev
+mise install       # Install pinned tools (bun, npm, semver)
+mise run setup     # Install dependencies
+mise run build     # Build the package
+mise run dev       # Start the dev server
 ```
 
 ## License
