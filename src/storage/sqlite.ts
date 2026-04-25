@@ -3,7 +3,6 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { sql, eq, and, desc, asc } from "drizzle-orm";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { specs, specVersions, auditLog } from "./schema";
 import type {
   Spec,
@@ -16,10 +15,10 @@ import type {
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { v4 as uuid } from "uuid";
 
-const MIGRATIONS_FOLDER = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../drizzle/migrations/sqlite"
-);
+const MIGRATIONS_FOLDER = new URL(
+  "../../drizzle/migrations/sqlite",
+  import.meta.url
+).pathname;
 
 export class SQLiteSpecStore implements SpecStore {
   private db: BetterSQLite3Database;

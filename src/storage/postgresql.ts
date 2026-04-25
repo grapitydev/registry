@@ -3,7 +3,6 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { eq, and, desc } from "drizzle-orm";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { specs, specVersions, auditLog } from "./schema-pg";
 import type {
   Spec,
@@ -16,10 +15,10 @@ import type {
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { v4 as uuid } from "uuid";
 
-const MIGRATIONS_FOLDER = path.join(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "../../drizzle/migrations/pg"
-);
+const MIGRATIONS_FOLDER = new URL(
+  "../../drizzle/migrations/pg",
+  import.meta.url
+).pathname;
 
 export class PostgreSQLSpecStore implements SpecStore {
   private db: NodePgDatabase;
