@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.6](https://github.com/grapitydev/registry/compare/v0.0.5...v0.0.6) (2026-04-25)
+
+
+### Bug Fixes
+
+* replace Bun-specific APIs (import.meta.dir/main) with Node-compatible equivalents ([410eee9](https://github.com/grapitydev/registry/commit/410eee93a15fed911efb658fccebe170e0758a8f))
+
 ## [0.0.5](https://github.com/grapitydev/registry/compare/v0.0.4...v0.0.5) (2026-04-25)
 
 
