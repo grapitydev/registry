@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.7](https://github.com/grapitydev/registry/compare/v0.0.6...v0.0.7) (2026-04-25)
+
+
+### Bug Fixes
+
+* move fileURLToPath usage to module level to avoid tsup bundling issue ([fcbf675](https://github.com/grapitydev/registry/commit/fcbf675050afe6fb3a9156733684112f228e69af))
+* use new URL() instead of fileURLToPath to avoid bundler issues ([4e55516](https://github.com/grapitydev/registry/commit/4e55516cc910a48299fefa0f451b2412385ea25b))
+
 ## [0.0.6](https://github.com/grapitydev/registry/compare/v0.0.5...v0.0.6) (2026-04-25)
 
 
