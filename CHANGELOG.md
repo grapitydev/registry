@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.0](https://github.com/grapitydev/registry/compare/v0.0.9...v0.1.0) (2026-04-26)
+
+
+### Features
+
+* add SVG favicon to welcome page ([e2764fd](https://github.com/grapitydev/registry/commit/e2764fdf970a1eebe468e79fff14b0364a58e93d))
+* add welcome page at / with RGB glitch logo and API endpoint reference ([58f63bc](https://github.com/grapitydev/registry/commit/58f63bc0cf73219311c4cae93e0b3b7837141142))
+
+
+### Bug Fixes
+
+* correct RGB chromatic glitch logo using single SVG with blended layers ([536fbcf](https://github.com/grapitydev/registry/commit/536fbcf69e9dc533cc12906bd69f10cd2474e778))
+* run dev server with Node.js via tsx to avoid Bun/better-sqlite3 ABI incompatibility ([8aff181](https://github.com/grapitydev/registry/commit/8aff1816d8caab674bbbba14351fc819eb90624d))
+
 ## [0.0.9](https://github.com/grapitydev/registry/compare/v0.0.8...v0.0.9) (2026-04-25)
 
 
