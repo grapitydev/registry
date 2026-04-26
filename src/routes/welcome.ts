@@ -50,10 +50,8 @@ body {
   85% { transform: translate(1px,-1px); }
   86% { transform: translate(0,0); }
 }
-.glitch-rgb { position: relative; display: inline-flex; }
-.glitch-rgb svg { position: absolute; top: 0; left: 0; }
-.glitch-rgb svg:last-child { position: relative; }
 .layer-r { fill: #f43f5e; mix-blend-mode: screen; animation: rgb-split 2.5s ease-in-out infinite; }
+.layer-g { fill: url(#lgr); mix-blend-mode: normal; }
 .layer-b { fill: #06b6d4; mix-blend-mode: screen; animation: rgb-split 2.5s ease-in-out infinite reverse; animation-delay: 0.05s; }
 
 /* ── LAYOUT ── */
@@ -197,32 +195,21 @@ body {
 <div class="hero">
 
   <!-- LOGO -->
-  <div class="glitch-rgb">
-    <!-- red layer -->
-    <svg viewBox="0 0 32 32" width="72" height="72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="32" height="32" rx="6" fill="#0a0a0f"/>
-      <path class="layer-r" d="M7 24 L16 6 L25 24 L21 24 L16 14 L11 24 Z"/>
-      <circle class="layer-r" cx="16" cy="24" r="2.5"/>
-    </svg>
-    <!-- blue layer -->
-    <svg viewBox="0 0 32 32" width="72" height="72" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <rect width="32" height="32" rx="6" fill="transparent"/>
-      <path class="layer-b" d="M7 24 L16 6 L25 24 L21 24 L16 14 L11 24 Z"/>
-      <circle class="layer-b" cx="16" cy="24" r="2.5"/>
-    </svg>
-    <!-- main layer (gradient) -->
-    <svg viewBox="0 0 32 32" width="72" height="72" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#6366f1"/>
-          <stop offset="100%" stop-color="#06b6d4"/>
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="6" fill="#0a0a0f"/>
-      <path d="M7 24 L16 6 L25 24 L21 24 L16 14 L11 24 Z" fill="url(#lg)"/>
-      <circle cx="16" cy="24" r="2.5" fill="url(#lg)"/>
-    </svg>
-  </div>
+  <svg viewBox="0 0 32 32" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="lgr" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#6366f1"/>
+        <stop offset="100%" stop-color="#06b6d4"/>
+      </linearGradient>
+    </defs>
+    <rect width="32" height="32" rx="6" fill="#07070e"/>
+    <path class="layer-r" d="M7 24 L16 6 L25 24 L21 24 L16 14 L11 24 Z"/>
+    <circle class="layer-r" cx="16" cy="24" r="2.5"/>
+    <path class="layer-g" d="M7 24 L16 6 L25 24 L21 24 L16 14 L11 24 Z"/>
+    <circle class="layer-g" cx="16" cy="24" r="2.5"/>
+    <path class="layer-b" d="M7 24 L16 6 L25 24 L21 24 L16 14 L11 24 Z"/>
+    <circle class="layer-b" cx="16" cy="24" r="2.5"/>
+  </svg>
 
   <!-- WORDMARK -->
   <div class="wordmark">
