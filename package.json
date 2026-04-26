@@ -34,7 +34,7 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "bun run src/serve.ts",
+    "dev": "node --import tsx/esm src/serve.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "generate": "openapi-typescript openapi.yaml -o src/generated/api.ts",
@@ -67,6 +67,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/pg": "^8.11.0",
     "drizzle-kit": "^0.31.0",
+    "tsx": "^4.19.0",
     "openapi-typescript": "^7.13.0",
     "tsup": "^8.4.0",
     "typescript": "^5.8.0"
