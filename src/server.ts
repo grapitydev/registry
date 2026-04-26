@@ -12,6 +12,7 @@ import { getVersionRoute } from "./routes/get-version";
 import { compatReportRoute } from "./routes/compat-report";
 import { serveSpecRoute } from "./routes/serve-spec";
 import { healthRoute } from "./routes/health";
+import { welcomeRoute } from "./routes/welcome";
 import type { ServerConfig } from "./config";
 
 export type AppEnv = {
@@ -43,6 +44,7 @@ export function createApp(config: ServerConfig, store: SpecStore) {
   app.route("/v1/specs", serveSpecRoute);
   app.route("/v1/specs", compatReportRoute);
   app.route("/v1/health", healthRoute);
+  app.route("/", welcomeRoute);
 
   return app;
 }
