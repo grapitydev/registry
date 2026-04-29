@@ -21,24 +21,15 @@ export async function startServer(userConfig?: Partial<ServerConfig>) {
     }
   }
 
-  if (config.database === "sqlite" && config.auth?.mode && config.auth.mode !== "none") {
-    console.warn("Warning: Auth is enabled in local SQLite mode. This is intended for shared local registries.");
-  }
-
   const store = new SQLiteSpecStore(config.sqlitePath!);
   await store.migrate();
 
   const app = createApp(config, store);
 
-  console.log(`Starting Grapity Registry on port ${config.port}`);
-  console.log(`Database: ${config.database} (${config.sqlitePath || config.postgresUrl})`);
-
   serve({
     fetch: app.fetch,
     port: config.port,
   });
-
-  console.log(`Grapity Registry listening on http://localhost:${config.port}`);
 
   return app;
 }
