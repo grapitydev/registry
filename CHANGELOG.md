@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/grapitydev/registry/compare/v0.2.0...v0.2.1) (2026-04-29)
+
+
+### Bug Fixes
+
+* ensure compatibility with @grapity/core 0.1.0 ([0583f3a](https://github.com/grapitydev/registry/commit/0583f3a30f3f00498af43e12b426e8d8951ec2fe))
+
 ## [0.2.0](https://github.com/grapitydev/registry/compare/v0.1.0...v0.2.0) (2026-04-29)
 
 
