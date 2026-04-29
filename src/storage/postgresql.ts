@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import path from "node:path";
 import { specs, specVersions, auditLog } from "./schema-pg";
 import type {
@@ -83,13 +83,29 @@ export class PostgreSQLSpecStore implements SpecStore {
     return rows.map((r) => this.mapSpecRow(r));
   }
 
-  async listVersions(name: string): Promise<SpecVersion[]> {
+  async listVersions(
+    name: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<{ versions: SpecVersion[]; total: number }> {
     const spec = await this.getSpec(name);
-    if (!spec) return [];
+    if (!spec) return { versions: [], total: 0 };
+
+    const limit = options?.limit ?? 10;
+    const offset = options?.offset ?? 0;
+
+    const [countRow] = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(specVersions)
+      .where(eq(specVersions.specId, spec.id));
+    const total = Number(countRow?.count ?? 0);
+
     const rows = await this.db.select().from(specVersions)
       .where(eq(specVersions.specId, spec.id))
-      .orderBy(desc(specVersions.createdAt), desc(specVersions.id));
-    return rows.map((r) => this.mapVersionRow(r));
+      .orderBy(desc(specVersions.createdAt), desc(specVersions.id))
+      .limit(limit)
+      .offset(offset);
+
+    return { versions: rows.map((r) => this.mapVersionRow(r)), total };
   }
 
   async pushSpecVersion(spec: Spec, version: SpecVersion): Promise<SpecVersion> {

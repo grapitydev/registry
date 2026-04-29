@@ -107,10 +107,10 @@ describe("Scenario 13: x-draft workflow", () => {
     const { res, body } = await pushSpec(app, { content: specWithDraftEndpoint, name: "payments-api" });
 
     expect(res.status).toBe(201);
-    expect(body.version.semver).toBe("1.1.0");
-    expect(body.compatReport.classification).toBe("minor");
-    expect(body.compatReport.breakingChanges).toHaveLength(0);
-    expect(body.compatReport.safeChanges.some((c: any) => c.rule === "endpoint-added")).toBe(true);
+    expect(body.data.version.semver).toBe("1.1.0");
+    expect(body.data.compatReport.classification).toBe("minor");
+    expect(body.data.compatReport.breakingChanges).toHaveLength(0);
+    expect(body.data.compatReport.safeChanges.some((c: any) => c.rule === "endpoint-added")).toBe(true);
   });
 
   it("13B: iterating on a draft endpoint with a breaking change is safe", async () => {
@@ -119,8 +119,8 @@ describe("Scenario 13: x-draft workflow", () => {
     const { res, body } = await pushSpec(app, { content: specWithDraftEndpointModified, name: "payments-api" });
 
     expect(res.status).toBe(201);
-    expect(body.compatReport.breakingChanges).toHaveLength(0);
-    expect(body.compatReport.safeChanges.some((c: any) => c.rule === "draft-endpoint-changed")).toBe(true);
+    expect(body.data.compatReport.breakingChanges).toHaveLength(0);
+    expect(body.data.compatReport.safeChanges.some((c: any) => c.rule === "draft-endpoint-changed")).toBe(true);
   });
 
   it("13C: removing a draft endpoint is safe with no grace period required", async () => {
@@ -129,8 +129,8 @@ describe("Scenario 13: x-draft workflow", () => {
     const { res, body } = await pushSpec(app, { content: specWithDraftEndpointRemoved, name: "payments-api" });
 
     expect(res.status).toBe(201);
-    expect(body.compatReport.breakingChanges).toHaveLength(0);
-    expect(body.compatReport.safeChanges.some((c: any) => c.rule === "draft-endpoint-changed")).toBe(true);
+    expect(body.data.compatReport.breakingChanges).toHaveLength(0);
+    expect(body.data.compatReport.safeChanges.some((c: any) => c.rule === "draft-endpoint-changed")).toBe(true);
   });
 
   it("13D: graduating a draft endpoint with the same interface produces a patch bump", async () => {
@@ -139,9 +139,9 @@ describe("Scenario 13: x-draft workflow", () => {
     const { res, body } = await pushSpec(app, { content: specWithDraftEndpointGraduated, name: "payments-api" });
 
     expect(res.status).toBe(201);
-    expect(body.version.semver).toBe("1.1.1");
-    expect(body.compatReport.classification).toBe("patch");
-    expect(body.compatReport.breakingChanges).toHaveLength(0);
+    expect(body.data.version.semver).toBe("1.1.1");
+    expect(body.data.compatReport.classification).toBe("patch");
+    expect(body.data.compatReport.breakingChanges).toHaveLength(0);
   });
 
   it("13E: graduating and modifying a draft endpoint in the same push is safe", async () => {
@@ -150,8 +150,8 @@ describe("Scenario 13: x-draft workflow", () => {
     const { res, body } = await pushSpec(app, { content: specWithDraftEndpointGraduatedAndModified, name: "payments-api" });
 
     expect(res.status).toBe(201);
-    expect(body.compatReport.breakingChanges).toHaveLength(0);
-    expect(body.compatReport.safeChanges.some((c: any) => c.rule === "draft-endpoint-changed")).toBe(true);
+    expect(body.data.compatReport.breakingChanges).toHaveLength(0);
+    expect(body.data.compatReport.safeChanges.some((c: any) => c.rule === "draft-endpoint-changed")).toBe(true);
   });
 
   it("13F: marking a stable endpoint as draft is blocked with 409", async () => {
@@ -172,6 +172,6 @@ describe("Scenario 13: x-draft workflow", () => {
     });
 
     expect(res.status).toBe(201);
-    expect(body.version.forceReason).toBe("deliberate rework of payments endpoint");
+    expect(body.data.version.forceReason).toBe("deliberate rework of payments endpoint");
   });
 });

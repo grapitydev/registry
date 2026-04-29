@@ -100,11 +100,11 @@ describe("Scenario 2: Safe change — new endpoint added", () => {
     const { res, body } = await pushSpec(app, { content: specWithNewEndpoint, name: "payments-api" });
 
     expect(res.status).toBe(201);
-    expect(body.isNewSpec).toBe(false);
-    expect(body.version.semver).toBe("1.1.0");
-    expect(body.compatReport.classification).toBe("minor");
-    expect(body.compatReport.breakingChanges).toHaveLength(0);
-    expect(body.compatReport.safeChanges.length).toBeGreaterThan(0);
+    expect(body.data.isNewSpec).toBe(false);
+    expect(body.data.version.semver).toBe("1.1.0");
+    expect(body.data.compatReport.classification).toBe("minor");
+    expect(body.data.compatReport.breakingChanges).toHaveLength(0);
+    expect(body.data.compatReport.safeChanges.length).toBeGreaterThan(0);
   });
 
   it("compat report is retrievable via GET /v1/specs/{name}/compat/{semver}", async () => {
@@ -114,7 +114,7 @@ describe("Scenario 2: Safe change — new endpoint added", () => {
     const res = await app.request("/v1/specs/payments-api/compat/1.1.0");
     const body = await res.json() as any;
     expect(res.status).toBe(200);
-    expect(body.compatReport.classification).toBe("minor");
+    expect(body.data.classification).toBe("minor");
   });
 
   it("versions are listed newest first", async () => {
@@ -122,9 +122,9 @@ describe("Scenario 2: Safe change — new endpoint added", () => {
     await pushSpec(app, { content: specWithNewEndpoint, name: "payments-api" });
 
     const res = await app.request("/v1/specs/payments-api/versions");
-    const versions = await res.json() as any[];
-    expect(versions[0].semver).toBe("1.1.0");
-    expect(versions[1].semver).toBe("1.0.0");
+    const versions = await res.json() as any;
+    expect(versions.data[0].semver).toBe("1.1.0");
+    expect(versions.data[1].semver).toBe("1.0.0");
   });
 });
 
@@ -137,9 +137,9 @@ describe("Scenario 3: Deprecate an endpoint with a future sunset date", () => {
     });
 
     expect(res.status).toBe(201);
-    expect(body.version.semver).toBe("1.1.0");
-    expect(body.compatReport.classification).toBe("minor");
-    expect(body.compatReport.breakingChanges).toHaveLength(0);
+    expect(body.data.version.semver).toBe("1.1.0");
+    expect(body.data.compatReport.classification).toBe("minor");
+    expect(body.data.compatReport.breakingChanges).toHaveLength(0);
   });
 
   it("deprecated content is retrievable via spec serving endpoint", async () => {
@@ -172,7 +172,7 @@ describe("Scenario 4: Remove deprecated endpoint before sunset (blocked)", () =>
 
     const res = await app.request("/v1/specs/payments-api");
     const body = await res.json() as any;
-    expect(body.latestVersion.semver).toBe("1.1.0");
+    expect(body.data.latestVersion.semver).toBe("1.1.0");
   });
 });
 
@@ -183,8 +183,8 @@ describe("Scenario 5: Remove deprecated endpoint after sunset (allowed)", () => 
     const { res, body } = await pushSpec(app, { content: specWithoutLegacy, name: "payments-api" });
 
     expect(res.status).toBe(201);
-    expect(body.version.semver).toBe("2.0.0");
-    expect(body.compatReport.classification).toBe("major");
+    expect(body.data.version.semver).toBe("2.0.0");
+    expect(body.data.compatReport.classification).toBe("major");
   });
 
   it("version list shows all versions newest first", async () => {
@@ -193,8 +193,8 @@ describe("Scenario 5: Remove deprecated endpoint after sunset (allowed)", () => 
     await pushSpec(app, { content: specWithoutLegacy, name: "payments-api" });
 
     const res = await app.request("/v1/specs/payments-api/versions");
-    const versions = await res.json() as any[];
-    expect(versions.map((v: any) => v.semver)).toEqual(["2.0.0", "1.1.0", "1.0.0"]);
+    const versions = await res.json() as any;
+    expect(versions.data.map((v: any) => v.semver)).toEqual(["2.0.0", "1.1.0", "1.0.0"]);
   });
 });
 

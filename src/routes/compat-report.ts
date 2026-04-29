@@ -15,6 +15,6 @@ export const compatReportRoute = new Hono<AppEnv>().get(
       return c.json({ error: "not_found", message: `Compat report not found for ${name}@${semver}`, statusCode: 404 }, 404);
     }
 
-    return c.json({ compatReport: report });
+    return c.json({ data: report });
   }
 );

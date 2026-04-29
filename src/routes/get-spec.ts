@@ -19,7 +19,9 @@ export const getSpecRoute = new Hono<AppEnv>().get("/:name", async (c) => {
 
   const { spec, latestVersion } = result;
   return c.json({
-    spec,
-    latestVersion: latestVersion ? withoutContent(latestVersion) : undefined,
+    data: {
+      latestVersion: latestVersion ? withoutContent(latestVersion) : undefined,
+      spec,
+    },
   });
 });

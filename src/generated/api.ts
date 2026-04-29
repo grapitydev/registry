@@ -214,6 +214,22 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ListSpecsResponse: {
+            data: components["schemas"]["Spec"][];
+        };
+        PaginationMeta: {
+            /** @example true */
+            hasMore: boolean;
+            /** @example 10 */
+            limit: number;
+            /** @example 0 */
+            offset: number;
+            /**
+             * @description Total number of versions for this spec
+             * @example 42
+             */
+            total: number;
+        };
         /** @enum {string} */
         SpecType: "openapi" | "asyncapi";
         /** @enum {string} */
@@ -380,31 +396,41 @@ export interface components {
             reason?: string;
         };
         PushSpecResponse: {
-            spec: components["schemas"]["Spec"];
-            version: components["schemas"]["SpecVersion"];
-            compatReport?: components["schemas"]["CompatReport"];
-            /** @description True if this is the first version of this spec */
-            isNewSpec: boolean;
+            data: {
+                compatReport?: components["schemas"]["CompatReport"];
+                /** @description True if this is the first version of this spec */
+                isNewSpec: boolean;
+                spec: components["schemas"]["Spec"];
+                version: components["schemas"]["SpecVersion"];
+            };
         };
         ValidateSpecRequest: {
             /** @description Raw OpenAPI or AsyncAPI document (YAML or JSON) */
             content: string;
         };
         ValidateSpecResponse: {
-            valid: boolean;
-            errors?: string[];
-            warnings?: string[];
-            compatReport?: components["schemas"]["CompatReport"];
+            data: {
+                compatReport?: components["schemas"]["CompatReport"];
+                errors?: string[];
+                valid: boolean;
+                warnings?: string[];
+            };
         };
         GetSpecResponse: {
-            spec: components["schemas"]["Spec"];
-            latestVersion?: components["schemas"]["SpecVersion"];
+            data: {
+                latestVersion?: components["schemas"]["SpecVersion"];
+                spec: components["schemas"]["Spec"];
+            };
+        };
+        VersionsPage: {
+            data: components["schemas"]["SpecVersion"][];
+            pagination: components["schemas"]["PaginationMeta"];
         };
         GetVersionResponse: {
-            version: components["schemas"]["SpecVersion"];
+            data: components["schemas"]["SpecVersion"];
         };
         GetCompatReportResponse: {
-            compatReport: components["schemas"]["CompatReport"];
+            data: components["schemas"]["CompatReport"];
         };
     };
     responses: never;
@@ -480,7 +506,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Spec"][];
+                    "application/json": components["schemas"]["ListSpecsResponse"];
                 };
             };
             /** @description Unauthorized */
@@ -621,7 +647,12 @@ export interface operations {
     };
     listVersions: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Maximum number of versions to return */
+                limit?: number;
+                /** @description Number of versions to skip */
+                offset?: number;
+            };
             header?: never;
             path: {
                 /**
@@ -634,13 +665,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description List of versions */
+            /** @description Paginated list of versions */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SpecVersion"][];
+                    "application/json": components["schemas"]["VersionsPage"];
                 };
             };
             /** @description Unauthorized */

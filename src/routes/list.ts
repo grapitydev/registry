@@ -11,5 +11,5 @@ export const listRoute = new Hono<AppEnv>().get("/", async (c) => {
   const tags = c.req.query("tags")?.split(",");
 
   const specs = await service.listSpecs({ type, owner, tags });
-  return c.json(specs);
+  return c.json({ data: specs });
 });

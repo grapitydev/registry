@@ -157,8 +157,8 @@ export class RegistryService {
     return { spec, latestVersion: latestVersion ?? undefined };
   }
 
-  async listVersions(name: string) {
-    return this.store.listVersions(name);
+  async listVersions(name: string, options?: { limit?: number; offset?: number }) {
+    return this.store.listVersions(name, options);
   }
 
   async getVersion(name: string, semver: string) {

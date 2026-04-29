@@ -2,7 +2,7 @@ openapi: "3.1.0"
 
 info:
   title: Grapity Registry API
-  version: "0.0.1"
+  version: "0.1.0"
   description: >
     The Grapity Registry is an API contract guardian. It validates, versions,
     and enforces backward compatibility for OpenAPI and AsyncAPI specs.
@@ -73,9 +73,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Spec"
+                $ref: "#/components/schemas/ListSpecsResponse"
         "401":
           description: Unauthorized
           content:
@@ -188,15 +186,28 @@ paths:
       description: Returns versions ordered newest first.
       parameters:
         - $ref: "#/components/parameters/specName"
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 25
+          description: Maximum number of versions to return
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Number of versions to skip
       responses:
         "200":
-          description: List of versions
+          description: Paginated list of versions
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SpecVersion"
+                $ref: "#/components/schemas/VersionsPage"
         "401":
           description: Unauthorized
           content:
@@ -390,6 +401,33 @@ components:
       example: "1.2.0"
 
   schemas:
+    ListSpecsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Spec"
+
+    PaginationMeta:
+      type: object
+      required: [hasMore, limit, offset, total]
+      properties:
+        hasMore:
+          type: boolean
+          example: true
+        limit:
+          type: integer
+          example: 10
+        offset:
+          type: integer
+          example: 0
+        total:
+          type: integer
+          description: Total number of versions for this spec
+          example: 42
+
     SpecType:
       type: string
       enum: [openapi, asyncapi]
@@ -642,17 +680,21 @@ components:
 
     PushSpecResponse:
       type: object
-      required: [spec, version, isNewSpec]
+      required: [data]
       properties:
-        spec:
-          $ref: "#/components/schemas/Spec"
-        version:
-          $ref: "#/components/schemas/SpecVersion"
-        compatReport:
-          $ref: "#/components/schemas/CompatReport"
-        isNewSpec:
-          type: boolean
-          description: True if this is the first version of this spec
+        data:
+          type: object
+          required: [isNewSpec, spec, version]
+          properties:
+            compatReport:
+              $ref: "#/components/schemas/CompatReport"
+            isNewSpec:
+              type: boolean
+              description: True if this is the first version of this spec
+            spec:
+              $ref: "#/components/schemas/Spec"
+            version:
+              $ref: "#/components/schemas/SpecVersion"
 
     ValidateSpecRequest:
       type: object
@@ -664,41 +706,60 @@ components:
 
     ValidateSpecResponse:
       type: object
-      required: [valid]
+      required: [data]
       properties:
-        valid:
-          type: boolean
-        errors:
-          type: array
-          items:
-            type: string
-        warnings:
-          type: array
-          items:
-            type: string
-        compatReport:
-          $ref: "#/components/schemas/CompatReport"
+        data:
+          type: object
+          required: [valid]
+          properties:
+            compatReport:
+              $ref: "#/components/schemas/CompatReport"
+            errors:
+              type: array
+              items:
+                type: string
+            valid:
+              type: boolean
+            warnings:
+              type: array
+              items:
+                type: string
 
     GetSpecResponse:
       type: object
-      required: [spec]
+      required: [data]
       properties:
-        spec:
-          $ref: "#/components/schemas/Spec"
-        latestVersion:
-          $ref: "#/components/schemas/SpecVersion"
+        data:
+          type: object
+          required: [spec]
+          properties:
+            latestVersion:
+              $ref: "#/components/schemas/SpecVersion"
+            spec:
+              $ref: "#/components/schemas/Spec"
+
+    VersionsPage:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpecVersion"
+        pagination:
+          $ref: "#/components/schemas/PaginationMeta"
 
     GetVersionResponse:
       type: object
-      required: [version]
+      required: [data]
       properties:
-        version:
+        data:
           $ref: "#/components/schemas/SpecVersion"
 
     GetCompatReportResponse:
       type: object
-      required: [compatReport]
+      required: [data]
       properties:
-        compatReport:
+        data:
           $ref: "#/components/schemas/CompatReport"
 

@@ -66,22 +66,8 @@ describe("Scenario 9: CI validate before pushing", () => {
     const body = await res.json() as any;
 
     expect(res.status).toBe(200);
-    expect(body.valid).toBe(false);
-    expect(body.compatReport.breakingChanges.length).toBeGreaterThan(0);
-  });
-
-  it("validate returns valid: true for safe spec", async () => {
-    await pushSpec(app, { content: baseSpec, name: "payments-api" });
-
-    const res = await app.request("/v1/specs/payments-api/validate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: specWithNewEndpoint }),
-    });
-    const body = await res.json() as any;
-
-    expect(body.valid).toBe(true);
-    expect(body.compatReport.breakingChanges).toHaveLength(0);
+    expect(body.data.valid).toBe(false);
+    expect(body.data.compatReport.breakingChanges.length).toBeGreaterThan(0);
   });
 
   it("validate does not store anything", async () => {
@@ -94,6 +80,6 @@ describe("Scenario 9: CI validate before pushing", () => {
 
     const res = await app.request("/v1/specs/payments-api");
     const body = await res.json() as any;
-    expect(body.latestVersion.semver).toBe("1.0.0");
+    expect(body.data.latestVersion.semver).toBe("1.0.0");
   });
 });

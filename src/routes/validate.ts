@@ -27,7 +27,7 @@ export const validateRoute = new Hono<AppEnv>().post("/:name/validate", async (c
   const { valid, errors, warnings } = await validateOpenApiSpec(body.content);
 
   if (!valid) {
-    return c.json({ valid, errors, warnings });
+    return c.json({ data: { valid, errors, warnings } });
   }
 
   const store = c.get("store");
@@ -35,7 +35,7 @@ export const validateRoute = new Hono<AppEnv>().post("/:name/validate", async (c
   const result = await service.getSpec(name);
 
   if (!result?.latestVersion) {
-    return c.json({ valid: true, errors: [], warnings: [] });
+    return c.json({ data: { valid: true, errors: [], warnings: [] } });
   }
 
   try {
@@ -47,16 +47,20 @@ export const validateRoute = new Hono<AppEnv>().post("/:name/validate", async (c
 
     const hasBreaking = compatReport.breakingChanges.length > 0;
     return c.json({
-      valid: !hasBreaking,
-      errors: hasBreaking ? compatReport.breakingChanges.map((b) => b.description) : [],
-      warnings,
-      compatReport,
+      data: {
+        compatReport,
+        errors: hasBreaking ? compatReport.breakingChanges.map((b) => b.description) : [],
+        valid: !hasBreaking,
+        warnings,
+      },
     });
   } catch (err) {
     return c.json({
-      valid: false,
-      errors: [err instanceof Error ? err.message : "Compat analysis failed"],
-      warnings,
+      data: {
+        errors: [err instanceof Error ? err.message : "Compat analysis failed"],
+        valid: false,
+        warnings,
+      },
     });
   }
 });

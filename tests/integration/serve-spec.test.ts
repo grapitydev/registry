@@ -155,7 +155,7 @@ describe("Scenario 14: Spec serving", () => {
     const body = await res.json() as any;
 
     expect(res.status).toBe(200);
-    expect(body.latestVersion?.content).toBeUndefined();
+    expect(body.data.latestVersion?.content).toBeUndefined();
   });
 
   it("14K: GET /v1/specs/:name/versions/:semver response does not include content field", async () => {
@@ -165,7 +165,7 @@ describe("Scenario 14: Spec serving", () => {
     const body = await res.json() as any;
 
     expect(res.status).toBe(200);
-    expect(body.version?.content).toBeUndefined();
+    expect(body.data.version?.content).toBeUndefined();
   });
 
   it("14L: GET /v1/specs/:name/versions response does not include content field on any version", async () => {
@@ -173,10 +173,10 @@ describe("Scenario 14: Spec serving", () => {
     await pushSpec(app, { content: specWithNewEndpoint, name: "payments-api" });
 
     const res = await app.request("/v1/specs/payments-api/versions");
-    const versions = await res.json() as any[];
+    const versions = await res.json() as any;
 
     expect(res.status).toBe(200);
-    expect(versions.length).toBe(2);
-    versions.forEach(v => expect(v.content).toBeUndefined());
+    expect(versions.data.length).toBe(2);
+    versions.data.forEach((v: any) => expect(v.content).toBeUndefined());
   });
 });

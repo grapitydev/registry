@@ -95,8 +95,8 @@ describe("Scenario 7: Emergency removal with force", () => {
     });
 
     expect(res.status).toBe(201);
-    expect(body.version.forceReason).toBe("security fix CVE-2026-1234");
-    expect(body.version.semver).toBe("2.0.0");
+    expect(body.data.version.forceReason).toBe("security fix CVE-2026-1234");
+    expect(body.data.version.semver).toBe("2.0.0");
   });
 });
 
@@ -110,8 +110,8 @@ describe("Scenario 8: Explicit major version declaration", () => {
     });
 
     expect(res.status).toBe(201);
-    expect(body.version.semver).toBe("2.0.0");
-    expect(body.compatReport.classification).toBe("major");
+    expect(body.data.version.semver).toBe("2.0.0");
+    expect(body.data.compatReport.classification).toBe("major");
   });
 
   it("rejects breaking changes when version declared is not a major bump", async () => {
@@ -135,8 +135,8 @@ describe("Scenario 10: Prerelease workflow", () => {
     });
 
     expect(res.status).toBe(201);
-    expect(body.version.semver).toBe("0.1.0");
-    expect(body.version.isPrerelease).toBe(true);
+    expect(body.data.version.semver).toBe("0.1.0");
+    expect(body.data.version.isPrerelease).toBe(true);
   });
 
   it("subsequent prerelease push increments minor", async () => {
@@ -147,7 +147,7 @@ describe("Scenario 10: Prerelease workflow", () => {
       prerelease: true,
     });
 
-    expect(body.version.semver).toBe("0.2.0");
+    expect(body.data.version.semver).toBe("0.2.0");
   });
 
   it("pushing without prerelease graduates to 1.0.0", async () => {
@@ -158,8 +158,8 @@ describe("Scenario 10: Prerelease workflow", () => {
     });
 
     expect(res.status).toBe(201);
-    expect(body.version.semver).toBe("1.0.0");
-    expect(body.version.isPrerelease).toBe(false);
+    expect(body.data.version.semver).toBe("1.0.0");
+    expect(body.data.version.isPrerelease).toBe(false);
   });
 
   it("returns 422 when pushing prerelease after a release version", async () => {

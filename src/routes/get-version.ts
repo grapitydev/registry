@@ -20,6 +20,6 @@ export const getVersionRoute = new Hono<AppEnv>().get(
       return c.json({ error: "not_found", message: `Version ${semver} not found for spec "${name}"`, statusCode: 404 }, 404);
     }
 
-    return c.json({ version: withoutContent(version) });
+    return c.json({ data: withoutContent(version) });
   }
 );
