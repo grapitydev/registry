@@ -1,6 +1,6 @@
 {
   "name": "@grapity/registry",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "description": "Grapity Registry - spec validation, compat checking, and storage server",
   "license": "Apache-2.0",
