@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/grapitydev/registry/compare/v0.1.0...v0.2.0) (2026-04-29)
+
+
+### Features
+
+* adopt data envelope for all responses and add version pagination ([9a93ef4](https://github.com/grapitydev/registry/commit/9a93ef42e580d41dc7b40e9317cba55f39471065))
+
 ## [0.1.0](https://github.com/grapitydev/registry/compare/v0.0.9...v0.1.0) (2026-04-26)
 
 
