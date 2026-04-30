@@ -25,6 +25,7 @@ async function serveSpec(
 
   let content: string;
   let specType: string;
+  let resolvedSemver: string | undefined;
 
   if (semver) {
     const version = await service.getVersion(name, semver);
@@ -32,6 +33,7 @@ async function serveSpec(
       return c.json({ error: "not_found", message: `Version ${semver} not found for spec "${name}"`, statusCode: 404 }, 404);
     }
     content = version.content;
+    resolvedSemver = semver;
     const result = await service.getSpec(name);
     specType = result?.spec.type ?? "openapi";
   } else {
@@ -40,21 +42,24 @@ async function serveSpec(
       return c.json({ error: "not_found", message: `Spec "${name}" not found`, statusCode: 404 }, 404);
     }
     content = result.latestVersion.content;
+    resolvedSemver = result.latestVersion.semver;
     specType = result.spec.type;
   }
 
   const parsed = yaml.load(content);
   const contentType = CONTENT_TYPES[specType]?.[format] ?? CONTENT_TYPES.openapi[format];
-
-  if (format === "yaml") {
-    return new Response(yaml.dump(parsed), {
-      headers: { "Content-Type": contentType },
-    });
+  const headers: Record<string, string> = {
+    "Content-Type": contentType,
+  };
+  if (resolvedSemver) {
+    headers["Grapity-Resolved-Version"] = resolvedSemver;
   }
 
-  return new Response(JSON.stringify(parsed), {
-    headers: { "Content-Type": contentType },
-  });
+  if (format === "yaml") {
+    return new Response(yaml.dump(parsed), { headers });
+  }
+
+  return new Response(JSON.stringify(parsed), { headers });
 }
 
 export const serveSpecRoute = new Hono<AppEnv>()

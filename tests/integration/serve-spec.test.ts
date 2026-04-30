@@ -148,6 +148,31 @@ describe("Scenario 14: Spec serving", () => {
     expect(res.status).toBe(404);
   });
 
+  it("14M: includes Grapity-Resolved-Version header for latest spec", async () => {
+    await pushSpec(app, { content: baseSpec, name: "payments-api" });
+
+    const res = await app.request("/v1/specs/payments-api/spec.json");
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Grapity-Resolved-Version")).toBe("1.0.0");
+  });
+
+  it("14N: includes Grapity-Resolved-Version header for specific version", async () => {
+    await pushSpec(app, { content: baseSpec, name: "payments-api" });
+
+    const res = await app.request("/v1/specs/payments-api/versions/1.0.0/spec.json");
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Grapity-Resolved-Version")).toBe("1.0.0");
+  });
+
+  it("14O: does not include Grapity-Resolved-Version header on 404", async () => {
+    const res = await app.request("/v1/specs/does-not-exist/spec.json");
+
+    expect(res.status).toBe(404);
+    expect(res.headers.get("Grapity-Resolved-Version")).toBeNull();
+  });
+
   it("14J: GET /v1/specs/:name response does not include content field", async () => {
     await pushSpec(app, { content: baseSpec, name: "payments-api" });
 
