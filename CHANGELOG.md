@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/grapitydev/registry/compare/v0.2.1...v0.3.0) (2026-04-30)
+
+
+### Features
+
+* add Grapity-Resolved-Version header to spec serving endpoints ([1ccfdb4](https://github.com/grapitydev/registry/commit/1ccfdb4460fa9a05319b3bfa4b438f69203da613))
+
 ## [0.2.1](https://github.com/grapitydev/registry/compare/v0.2.0...v0.2.1) (2026-04-29)
 
 
