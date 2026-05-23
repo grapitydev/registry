@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/grapitydev/registry/compare/v0.3.1...v0.3.2) (2026-05-23)
+
+
+### Bug Fixes
+
+* use fix prefix for @grapity/* dependency bumps to trigger releases ([1d01f4b](https://github.com/grapitydev/registry/commit/1d01f4bb022039405c0124f7a861a42eee848aba))
+
 ## [0.3.1](https://github.com/grapitydev/registry/compare/v0.3.0...v0.3.1) (2026-05-23)
 
 
