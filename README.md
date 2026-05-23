@@ -39,6 +39,11 @@ npm install -g @grapity/cli
 grapity init --remote --url https://api.grapity.dev --api-key <key>
 ```
 
+## Requirements
+
+- Node.js 20+ or Bun 1.3.5+
+- SQLite (local) or PostgreSQL 14+ (production)
+
 ## Development
 
 ```bash
