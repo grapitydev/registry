@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/grapitydev/registry/compare/v0.3.0...v0.3.1) (2026-05-23)
+
+
+### Bug Fixes
+
+* document Node.js 20+ support and bump better-sqlite3 for Node 26 compat ([fe60d1a](https://github.com/grapitydev/registry/commit/fe60d1a63502e9b04e8255c74b9fb4786af24434))
+
 ## [0.3.0](https://github.com/grapitydev/registry/compare/v0.2.1...v0.3.0) (2026-04-30)
 
 
