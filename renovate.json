@@ -1,12 +1,12 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "enabled": true,
-  "semanticCommitType": "deps",
+  "semanticCommitType": "chore",
   "packageRules": [
     {
       "matchPackagePatterns": ["@grapity/*"],
       "rangeStrategy": "bump",
-      "semanticCommitType": "deps",
+      "semanticCommitType": "fix",
       "separateMajorMinor": true
     },
     {
