@@ -65,6 +65,9 @@ body {
   max-width: 720px;
   width: 100%;
 }
+.hero > svg {
+  margin-bottom: -24px;
+}
 
 .wordmark {
   display: flex;
