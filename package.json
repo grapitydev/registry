@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Grapity Registry - spec validation, compat checking, and storage server",
   "license": "Apache-2.0",
+  "homepage": "https://grapity.dev/docs/platform/registry/overview",
   "repository": {
     "type": "git",
     "url": "https://github.com/grapitydev/registry"

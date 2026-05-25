@@ -299,7 +299,7 @@ body {
       grapity.dev
     </a>
     <span class="link-dot"></span>
-    <a class="link" href="https://github.com/grapitydev/registry" target="_blank" rel="noopener">
+    <a class="link" href="https://grapity.dev/docs/platform/registry/overview" target="_blank" rel="noopener">
       docs ↗
     </a>
   </div>

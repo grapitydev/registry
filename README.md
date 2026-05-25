@@ -2,6 +2,8 @@
 
 Grapity Registry Server - spec validation, backward compatibility checking, and versioned storage for API specs.
 
+**Documentation:** [grapity.dev/docs/platform/registry/overview](https://grapity.dev/docs/platform/registry/overview) · [Quickstart](https://grapity.dev/docs/getting-started/quickstart)
+
 <p align="center">
   <img src="./assets/grapity-registry.gif" alt="grapity Registry demo" width="600">
 </p>
