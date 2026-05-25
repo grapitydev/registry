@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Start the dev server"
+
+bun run dev
