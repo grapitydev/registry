@@ -3,7 +3,7 @@
 Grapity Registry Server - spec validation, backward compatibility checking, and versioned storage for API specs.
 
 <p align="center">
-  <img src="./assets/grapity-registry.gif" alt="Grapity Registry demo" width="600">
+  <img src="./assets/grapity-registry.gif" alt="grapity Registry demo" width="600">
 </p>
 
 This is the server component. The CLI (`@grapity/cli`) communicates with this server over HTTP. Supports both SQLite (local) and PostgreSQL (production) backends.
