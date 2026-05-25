@@ -62,7 +62,7 @@ body {
   align-items: center;
   gap: 28px;
   text-align: center;
-  max-width: 640px;
+  max-width: 720px;
   width: 100%;
 }
 
@@ -88,7 +88,7 @@ body {
 
 .wordmark .subtitle {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -104,7 +104,7 @@ body {
   border-radius: 8px;
   padding: 8px 16px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 @keyframes pulse-dot {
@@ -124,7 +124,7 @@ body {
 /* ── ENDPOINTS GRID ── */
 .section-label {
   font-family: var(--mono);
-  font-size: 9.5px;
+  font-size: 11px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -146,12 +146,12 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 14px;
+  padding: 10px 16px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 7px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 13px;
   text-decoration: none;
   color: var(--text);
   transition: border-color 0.15s, background 0.15s;
@@ -159,19 +159,23 @@ body {
 .endpoint:hover { border-color: #6366f133; background: #0f0f1e; }
 
 .method {
-  font-size: 9.5px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.05em;
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 4px;
-  min-width: 36px;
+  min-width: 42px;
   text-align: center;
+  border: 1px solid;
 }
-.GET  { background: #06b6d418; color: #06b6d4; }
-.POST { background: #6366f118; color: #8b8ff5; }
+.GET    { background: #3b82f620; color: #3b82f6; border-color: #3b82f630; }
+.POST   { background: #22d3a520; color: #22d3a5; border-color: #22d3a530; }
+.PUT    { background: #f59e0b20; color: #f59e0b; border-color: #f59e0b30; }
+.DELETE { background: #f43f5e20; color: #f43f5e; border-color: #f43f5e30; }
+.PATCH  { background: #a855f720; color: #a855f7; border-color: #a855f730; }
 
 .path { flex: 1; color: var(--text); }
-.desc { color: var(--muted); font-size: 10px; }
+.desc { color: var(--muted); font-size: 12px; }
 
 /* ── LINKS ── */
 .links {
@@ -181,7 +185,7 @@ body {
 }
 .link {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
   text-decoration: none;
   display: flex;
@@ -260,18 +264,23 @@ body {
     </div>
     <div class="endpoint">
       <span class="method GET">GET</span>
-      <span class="path">/v1/specs/:name/spec.yaml</span>
+      <span class="path">/v1/specs/:name/versions/:semver</span>
+      <span class="desc">get specific version</span>
+    </div>
+    <div class="endpoint">
+      <span class="method GET">GET</span>
+      <span class="path">/v1/specs/:name/spec.{yaml|json}</span>
       <span class="desc">fetch raw spec</span>
+    </div>
+    <div class="endpoint">
+      <span class="method GET">GET</span>
+      <span class="path">/v1/specs/:name/versions/:semver/spec.{yaml|json}</span>
+      <span class="desc">version-specific spec</span>
     </div>
     <div class="endpoint">
       <span class="method GET">GET</span>
       <span class="path">/v1/specs/:name/compat/:semver</span>
       <span class="desc">compatibility report</span>
-    </div>
-    <div class="endpoint">
-      <span class="method GET">GET</span>
-      <span class="path">/v1/health</span>
-      <span class="desc">server health</span>
     </div>
   </div>
 
