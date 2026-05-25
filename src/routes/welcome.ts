@@ -7,9 +7,9 @@ function buildPage(port: number, mode: string): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grapity Registry</title>
+<title>Registry | grapity</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%236366f1'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0f'/%3E%3Cpath d='M7 24 L16 6 L25 24 L21 24 L16 14 L11 24 Z' fill='url(%23g)'/%3E%3Ccircle cx='16' cy='24' r='2.5' fill='url(%23g)'/%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #07070e;
@@ -74,15 +74,16 @@ body {
 }
 
 .wordmark h1 {
-  font-family: var(--mono);
-  font-size: 28px;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  background: linear-gradient(135deg, #6366f1, #06b6d4);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.wordmark h1 .brand {
+  color: var(--text);
+}
+.wordmark h1 .product {
+  color: var(--muted);
 }
 
 .wordmark .subtitle {
@@ -214,8 +215,8 @@ body {
 
   <!-- WORDMARK -->
   <div class="wordmark">
-    <h1>Grapity</h1>
-    <span class="subtitle">L1 Registry &nbsp;·&nbsp; API contract server</span>
+    <h1><span class="brand">grapity</span> <span class="product">Registry</span></h1>
+    <span class="subtitle">API contract server</span>
   </div>
 
   <!-- STATUS -->
