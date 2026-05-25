@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/grapitydev/registry/compare/v0.3.3...v0.4.0) (2026-05-25)
+
+
+### Features
+
+* add documentation links ([a5f8585](https://github.com/grapitydev/registry/commit/a5f858593ed5ae8d12e2e88814c846c8034a9c27))
+
 ## [0.3.3](https://github.com/grapitydev/registry/compare/v0.3.2...v0.3.3) (2026-05-25)
 
 
