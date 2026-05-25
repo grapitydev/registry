@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/grapitydev/registry/compare/v0.3.2...v0.3.3) (2026-05-25)
+
+
+### Bug Fixes
+
+* add missing mise dev task for local development ([e8adcd5](https://github.com/grapitydev/registry/commit/e8adcd502db59a7d9f326b314e3ce92f08c2c196))
+
 ## [0.3.2](https://github.com/grapitydev/registry/compare/v0.3.1...v0.3.2) (2026-05-23)
 
 
