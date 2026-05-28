@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/grapitydev/registry/compare/v0.4.0...v0.5.0) (2026-05-28)
+
+
+### Features
+
+* add Apache-2.0 LICENSE file ([306a7a7](https://github.com/grapitydev/registry/commit/306a7a7c123d85643d208ffe83a7f758638b5920))
+
 ## [0.4.0](https://github.com/grapitydev/registry/compare/v0.3.3...v0.4.0) (2026-05-25)
 
 
